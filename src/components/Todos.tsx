@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Heart } from '@/components/icons/Heart';
 import { Close } from '@/components/icons/Close';
 import { AddTodo } from '@/components/AddTodo';
+import { gql } from 'graphql-request';
+import { client } from '@/lib/client';
 
 export type Todo = {
   id: number;
@@ -16,18 +18,79 @@ type TodosProps = {
   list: Todo[];
 };
 
+const ADD_TODO_MUTATION = gql`
+  mutation addTODO($listId: Int!, $desc: String!) {
+    addTODO(listId: $listId, desc: $desc) {
+      id
+      created_at
+      desc
+      todo_list_id
+      finished
+    }
+  }
+`;
+
+const REMOVE_TODO_MUTATION = gql`
+  mutation removeTODO($id: Int!, $listId: Int!) {
+    removeTODO(id: $id, listId: $listId)
+  }
+`;
+
+const FINISH_TODO_MUTATION = gql`
+  mutation finishTODO($id: Int!, $listId: Int!) {
+    finishTODO(id: $id, listId: $listId){
+      id
+      created_at
+      desc
+      todo_list_id
+      finished
+    }
+  }
+`;
+
 export const Todos = ({ list = [], listId }: TodosProps) => {
   const [todos, setTodos] = useState<Todo[]>(list);
 
-  const onAddHandler = (desc: string) => {
+  const onAddHandler = async(desc: string) => {
+
+    const res = await client.request<{ addTODO: Todo }>(ADD_TODO_MUTATION, {
+      listId: listId,
+      desc: desc,
+    });
+
+    setTodos([...todos, { id: res.addTODO.id, desc, finished: false }]);
+
     console.log(`Add todo ${desc}`);
   };
 
-  const onRemoveHandler = (id: number) => {
+  const onRemoveHandler = async(id: number) => {
+    const res = await client.request< {removeTODO: boolean} >(REMOVE_TODO_MUTATION, {
+      id: id,
+      listId: listId,
+    });
+
+    if (!res) {
+      return;
+    }
+
+    const todos2 = todos.filter((item) => item.id !== id);
+    setTodos(todos2);
     console.log(`Remove todo ${id}`);
   };
 
-  const onFinishHandler = (id: number) => {
+  const onFinishHandler = async(id: number) => {
+    const res = await client.request<{ finishTODO: Todo }>(FINISH_TODO_MUTATION, {
+      id: id,
+      listId: listId,
+    });
+
+    const todos2 = todos.map((item) => {
+      if (item.id === id) {
+        return { ...item, finished: res.finishTODO.finished };
+      }
+      return item;
+    });
+    setTodos(todos2);
     console.log(`Mark todo ${id} as finished`);
   };
 
