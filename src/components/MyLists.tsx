@@ -8,6 +8,8 @@ import { useState } from 'react';
 import { Close } from './icons/Close';
 import { gql } from 'graphql-request';
 import { client } from '@/lib/client';
+import { useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export type TodoList = {
   id: number;
@@ -28,6 +30,7 @@ const DELETE_TODO_LIST_MUTATION = gql`
 
 export const MyLists = ({ list = [] }: MyListsProps) => {
   const [todoLists, setTodoLists] = useState<TodoList[]>(list);
+  const constraintsRef = useRef(null);
 
   const onCreateHandler = (newTodoList: TodoList) => {
     setTodoLists([...todoLists, newTodoList]);
@@ -46,21 +49,28 @@ export const MyLists = ({ list = [] }: MyListsProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-8 text-center">
+    <>
+      <motion.div className="flex flex-col gap-8 text-center" ref={constraintsRef}>
       <h1 className="text-4xl">{todoLists.length > 0 ? 'My TODO lists' : 'No lists yet!'}</h1>
       <ul>
         {todoLists.map((item) => (
+          <>
+            <AnimatePresence initial={false}>
+            <motion.div layout drag dragConstraints={constraintsRef}>
           <li key={item.id} 
           >
             <div className="flex justify-between items-center">
-            <Link
+              <p className='white'>
+                Drag
+              </p>
+              <Link
               href={item.id.toString()}
               className={classNames(
                 'py-2 pl-4 pr-2 bg-gray-900 rounded-lg mb-4 flex items-center min-h-16 text-black hover:scale-[1.02] transform transition duration-300 ease-in-out',
                 randomColor(),
-              )}
-              style={{ width: '80%' }}
-            >
+                )}
+                style={{ width: '80%' }}
+                >
               {item.name}
             </Link>
               <button
@@ -71,9 +81,13 @@ export const MyLists = ({ list = [] }: MyListsProps) => {
               </button>
               </div>
           </li>
+                  </motion.div>
+              </AnimatePresence>
+              </>
         ))}
       </ul>
       <CreateList onCreate={onCreateHandler} />
-    </div>
+    </motion.div>
+    </>
   );
 };
