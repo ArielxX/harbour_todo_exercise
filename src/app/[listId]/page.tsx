@@ -4,7 +4,7 @@ import { gql } from 'graphql-request';
 
 type MyListPageMetadata = {
   params: { listId: string };
-}
+};
 
 export async function generateMetadata({ params }: MyListPageMetadata) {
   return {
@@ -24,10 +24,15 @@ const GET_TODOs_QUERY = gql`
   }
 `;
 
-export default async function MyListPage({ params: { listId } }: MyListPageProps) {
-  const { getTODOs } = await client.request<{ getTODOs: Todo[] }>(GET_TODOs_QUERY, {
-    listId: parseInt(listId),
-  });
+export default async function MyListPage({
+  params: { listId },
+}: MyListPageProps) {
+  const { getTODOs } = await client.request<{ getTODOs: Todo[] }>(
+    GET_TODOs_QUERY,
+    {
+      listId: parseInt(listId),
+    },
+  );
 
   return (
     <div className="flex align-center justify-center p-16 sm:p-8">
@@ -35,7 +40,7 @@ export default async function MyListPage({ params: { listId } }: MyListPageProps
         listId={parseInt(listId)}
         // TODO swap with real data from query and
         // make sure to make the query from the server
-        list={ getTODOs ?? []}
+        list={getTODOs ?? []}
       />
     </div>
   );

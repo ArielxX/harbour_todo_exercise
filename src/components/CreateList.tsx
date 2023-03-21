@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-import { client } from '@/lib/client';
-import { gql } from 'graphql-request';
-import { TodoList } from '@/components/MyLists';
-import { MY_EMAIL_KEY } from '../constants/email';
-
+import { client } from "@/lib/client";
+import { gql } from "graphql-request";
+import { TodoList } from "@/components/MyLists";
+import { MY_EMAIL_KEY } from "../constants/email";
 
 const CREATE_TODO_LIST_MUTATION = gql`
   mutation CreateList($input: CreateTODOListInput!) {
@@ -26,12 +25,15 @@ export const CreateList = ({ onCreate }: CreateListProps) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    const res = await client.request<{ createTODOList: TodoList }>(CREATE_TODO_LIST_MUTATION, {
-      input: {
-        name: formData.get('listName'),
-        email: MY_EMAIL_KEY,
-      },
-    });
+    const res = await client.request<{ createTODOList: TodoList }>(
+      CREATE_TODO_LIST_MUTATION,
+      {
+        input: {
+          name: formData.get("listName"),
+          email: MY_EMAIL_KEY,
+        },
+      }
+    );
 
     onCreate(res.createTODOList);
   };
